@@ -76,8 +76,9 @@ Notre base de données est SQL Server Sous Docker
 
      docker pull mcr.microsoft.com/mssql/server:2022-latest
 🐋 2. Lancer un conteneur SQL Server
-    docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong!Passw0rd" ^
-     -p 1433:1433 --name sqlserver ^
+    docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong!Passw0rd" 
+    
+     -p 1433:1433 --name sqlserver (ou le port de votre choix au cas ù ce port est déjà utilisé)
      -d mcr.microsoft.com/mssql/server:2022-latest
 
  ✅ 3. Vérifier que le conteneur fonctionne
