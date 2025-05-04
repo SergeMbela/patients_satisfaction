@@ -109,3 +109,64 @@ Supprimer	docker rm -f sqlserver
 Voir les logs	docker logs sqlserver
 Connexion shell	docker exec -it sqlserver "bash"
 
+
+
+
+✅ OVERVIEW
+Host: Windows (Docker with SQL Server)
+
+Client: WSL2 (Anaconda, Python, probably Jupyter)
+
+Connection method: Via ODBC or pyodbc, sqlalchemy, or pymssql using the SQL Server's IP/hostname and port
+
+🔧 STEP 1: Ensure Docker SQL Server Is Running
+Make sure your SQL Server container is running with proper ports exposed (e.g., 1433):
+
+
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong!Passw0rd" \
+  -p 1433:1433 --name sqlserver \
+  -d mcr.microsoft.com/mssql/server:2022-latest
+
+
+  🔧 STEP 2: Get Windows Host IP (From WSL)
+Run this in WSL to get your Windows host IP:
+
+
+cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }'
+Save the result (e.g., 192.168.1.1 or similar), or use host.docker.internal if supported by your WSL setup (WSL2 may require the IP method).
+
+
+🔧 STEP 3: Install Required Packages in WSL
+Inside WSL:
+
+sudo apt update
+sudo apt install unixodbc-dev gcc g++ gnupg curl
+conda install -c conda-forge pyodbc
+
+
+You may also need to install the ODBC Driver for SQL Server:
+
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+sudo su
+curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
+
+sudo apt update
+sudo ACCEPT_EULA=Y apt install msodbcsql17
+
+
+🔧 STEP 4: Test Python Connection
+In a Python script or notebook:
+
+import pyodbc
+
+server = '192.168.x.x'  # Replace with Windows host IP or try 'host.docker.internal'
+database = 'master'
+username = 'sa'
+password = 'YourStrong!Passw0rd'
+connection_string = f"DRIVER={{ODBC Driver 17 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
+
+conn = pyodbc.connect(connection_string)
+cursor = conn.cursor()
+cursor.execute("SELECT @@VERSION")
+row = cursor.fetchone()
+print(row)
